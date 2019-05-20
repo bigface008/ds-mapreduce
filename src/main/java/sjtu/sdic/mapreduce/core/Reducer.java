@@ -1,7 +1,9 @@
 package sjtu.sdic.mapreduce.core;
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import org.apache.commons.io.FileUtils;
 import sjtu.sdic.mapreduce.common.KeyValue;
 import sjtu.sdic.mapreduce.common.Utils;
 
@@ -58,6 +60,20 @@ public class Reducer {
      * @param reduceF user-defined reduce function
      */
     public static void doReduce(String jobName, int reduceTask, String outFile, int nMap, ReduceFunc reduceF) {
-        
+        try {
+            List<KeyValue> kvl;
+            for (int i = 0; i < nMap; i++) {
+                File file = new File(Utils.reduceName(jobName, i, reduceTask));
+                if (!file.exists()) {
+                    System.out.println("Operation of opening file in Reducer.doReduce() failed.");
+                    return;
+                }
+
+                KeyValue key_value = JSON.parseObject(FileUtils.readFileToString(file), KeyValue.class);
+
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 }
