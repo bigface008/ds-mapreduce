@@ -1,12 +1,15 @@
 package sjtu.sdic.mapreduce.core;
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import org.apache.commons.io.FileUtils;
 import sjtu.sdic.mapreduce.common.KeyValue;
 import sjtu.sdic.mapreduce.common.Utils;
 
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.lang.reflect.Array;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -71,16 +74,32 @@ public class Mapper {
         File file = new File(inFile);
         try {
             if (!file.exists()) {
-                System.out.println("Operation of opening file in Mapper.doMap() failed");
+                System.out.println("Operation of opening file in Mapper.doMap() failed.");
                 return;
             }
 
             String content = FileUtils.readFileToString(file);
-            List<KeyValue> reduce_list = mapF.map(inFile, content);
+            List<KeyValue> kvl = mapF.map(inFile, content);
+
+            ArrayList<ArrayList<KeyValue>> kvll = new ArrayList<ArrayList<KeyValue>>();
+            for (KeyValue kv : kvl) {
+                int hash = hashCode(kv.key) % nReduce;
+                kvll.get(hash).add(kv);
+            }
 
             for (int i = 0; i < nReduce; i++) {
                 String reduce_file_name = Utils.reduceName(jobName, mapTask, i);
-                
+                File reduce_file = new File(reduce_file_name);
+                if (!reduce_file.createNewFile()) {
+                    System.out.println("Operation of creating file in Mapper.doMap() failed.");
+                    return;
+                }
+
+                for (KeyValue kv : kvll.get(i)) {
+                    FileWriter file_writer = new FileWriter(file.getName());
+                    String reduce_file_content = JSON.toJSONString(kv);
+                    file_writer.write(reduce_file_content);
+                }
             }
         } catch (IOException e) {
             e.printStackTrace();
