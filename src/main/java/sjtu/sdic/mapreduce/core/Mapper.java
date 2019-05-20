@@ -66,8 +66,8 @@ public class Mapper {
      * @param mapF    the user-defined map function
      */
     public static void doMap(String jobName, int mapTask, String inFile, int nReduce, MapFunc mapF) {
-        File file = new File(inFile);
         try {
+            File file = new File(inFile);
             if (!file.exists()) {
                 System.out.println("Operation of opening file in Mapper.doMap() failed.");
                 return;
