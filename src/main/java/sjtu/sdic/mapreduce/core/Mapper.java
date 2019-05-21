@@ -71,7 +71,7 @@ public class Mapper {
                     + mapTask + "; inFile " + inFile + "; nReduce " + nReduce);
             File file = new File(inFile);
             if (!file.exists()) {
-                System.out.println("Operation of opening file in Mapper.doMap() failed.");
+                System.out.println("Mapper.doMap(): Operation of opening file failed.");
                 return;
             }
 
@@ -90,7 +90,7 @@ public class Mapper {
             for (int i = 0; i < nReduce; i++) {
                 File intermediate_file = new File(Utils.reduceName(jobName, mapTask, i));
                 if (!intermediate_file.createNewFile()) {
-                    System.out.println("Operation of creating file in Mapper.doMap() failed.");
+                    System.out.println("Mapper.doMap(): Operation of creating file failed.");
                     return;
                 }
 
@@ -99,7 +99,7 @@ public class Mapper {
                 file_writer.close();
             }
 
-            System.out.println("Mapper.doMap() mapTask " + mapTask + " end.");
+            System.out.println("Mapper.doMap(): mapTask " + mapTask + " end.");
         } catch (IOException e) {
             e.printStackTrace();
         }

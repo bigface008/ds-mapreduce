@@ -65,7 +65,7 @@ public class Reducer {
                 System.out.println("Reducer.doReduce(): reading file " + i);
                 File file = new File(Utils.reduceName(jobName, i, reduceTask));
                 if (!file.exists()) {
-                    System.out.println("Operation of opening file in Reducer.doReduce() failed.");
+                    System.out.println("Reducer.doReduce(): Operation of opening file failed.");
                     return;
                 }
 
@@ -82,28 +82,29 @@ public class Reducer {
                     return o1.key.compareTo(o2.key);
                 }
             });
+            System.out.println("Reducer.doReduce(): kvl_slice len " + kvl_slice.size());
             System.out.println("Reducer.doReduce(): Sort kvl end.\nReducer.doReduce(): Build result_kvl.");
 
             int len = kvl_slice.size();
             ArrayList<KeyValue> result_kvl = new ArrayList<KeyValue>();
-            ArrayList<String> reduceF_vall = new ArrayList<String>();
+            ArrayList<String> vl_for_key = new ArrayList<String>();
             for (int i = 0; i < len; i++) {
                 if (i != 0 && !(kvl_slice.get(i).key.equals(kvl_slice.get(i - 1)))) {
-                    String temp = reduceF.reduce(kvl_slice.get(i - 1).key, reduceF_vall.toArray(new String[0]));
+                    String temp = reduceF.reduce(kvl_slice.get(i - 1).key, vl_for_key.toArray(new String[0]));
                     result_kvl.add(new KeyValue(kvl_slice.get(i - 1).key, temp));
-                    reduceF_vall = new ArrayList<String>();
+                    vl_for_key.clear();
                 }
-                reduceF_vall.add(kvl_slice.get(i).value);
+                vl_for_key.add(kvl_slice.get(i).value);
             }
-            if (!reduceF_vall.isEmpty()) {
-                String temp = reduceF.reduce(kvl_slice.get(len - 1).key, reduceF_vall.toArray(new String[0]));
+            if (!vl_for_key.isEmpty()) { /* If values of the last key remain to be pushed. */
+                String temp = reduceF.reduce(kvl_slice.get(len - 1).key, vl_for_key.toArray(new String[0]));
                 result_kvl.add(new KeyValue((kvl_slice.get(len - 1).key), temp));
             }
             System.out.println("Reducer.doReduce(): build result_kvl end.");
 
             File file = new File(outFile);
             if (!file.createNewFile()) {
-                System.out.println("Operation of creating file in Reducer.doReduce() failed.");
+                System.out.println("Reducer.doReduce(): Operation of creating file failed.");
                 return;
             }
 
@@ -111,7 +112,7 @@ public class Reducer {
             file_writer.write(JSON.toJSONString(result_kvl));
             file_writer.close();
 
-            System.out.println("Reducer.doReduce() reduceTask " + reduceTask + " end.");
+            System.out.println("Reducer.doReduce(): reduceTask " + reduceTask + " end.");
         } catch (Exception e) {
             e.printStackTrace();
         }
