@@ -67,6 +67,8 @@ public class Mapper {
      */
     public static void doMap(String jobName, int mapTask, String inFile, int nReduce, MapFunc mapF) {
         try {
+            System.out.println("Mapper.doMap(): jobName " + jobName + "; mapTask "
+                    + mapTask + "; inFile " + inFile + "; nReduce " + nReduce);
             File file = new File(inFile);
             if (!file.exists()) {
                 System.out.println("Operation of opening file in Mapper.doMap() failed.");
@@ -76,7 +78,7 @@ public class Mapper {
             String content = FileUtils.readFileToString(file);
             List<KeyValue> kvl = mapF.map(inFile, content);
 
-            ArrayList<ArrayList<KeyValue>> kvll = new ArrayList<ArrayList<KeyValue>>(nReduce);
+            ArrayList<ArrayList<KeyValue>> kvll = new ArrayList<ArrayList<KeyValue>>();
             for (int i = 0; i < nReduce; i++) {
                 kvll.add(new ArrayList<KeyValue>());
             }
@@ -94,7 +96,10 @@ public class Mapper {
 
                 FileWriter file_writer = new FileWriter(intermediate_file.getName());
                 file_writer.write(JSON.toJSONString(kvll.get(i)));
+                file_writer.close();
             }
+
+            System.out.println("Mapper.doMap() mapTask " + mapTask + " end.");
         } catch (IOException e) {
             e.printStackTrace();
         }
