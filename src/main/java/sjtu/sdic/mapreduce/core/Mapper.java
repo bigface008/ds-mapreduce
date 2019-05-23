@@ -8,7 +8,6 @@ import sjtu.sdic.mapreduce.common.Utils;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.security.Key;
 import java.util.ArrayList;
 import java.util.List;
 

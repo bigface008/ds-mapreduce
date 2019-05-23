@@ -1,18 +1,12 @@
 package sjtu.sdic.mapreduce.core;
 
 import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONArray;
-import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.io.FileUtils;
 import sjtu.sdic.mapreduce.common.KeyValue;
 import sjtu.sdic.mapreduce.common.Utils;
 
 import java.io.File;
 import java.io.FileWriter;
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.security.Key;
 import java.util.*;
 
 /**
@@ -89,7 +83,7 @@ public class Reducer {
             ArrayList<KeyValue> result_kvl = new ArrayList<KeyValue>();
             ArrayList<String> vl_for_key = new ArrayList<String>();
             for (int i = 0; i < len; i++) {
-                if (i != 0 && !(kvl_slice.get(i).key.equals(kvl_slice.get(i - 1)))) {
+                if (i != 0 && !(kvl_slice.get(i).key.equals(kvl_slice.get(i - 1).key))) {
                     String temp = reduceF.reduce(kvl_slice.get(i - 1).key, vl_for_key.toArray(new String[0]));
                     result_kvl.add(new KeyValue(kvl_slice.get(i - 1).key, temp));
                     vl_for_key.clear();
@@ -108,8 +102,11 @@ public class Reducer {
                 return;
             }
 
+            Map<String, String> result_kvm = new HashMap<String, String>();
+            result_kvl.forEach((a) -> result_kvm.put(a.key, a.value));
+
             FileWriter file_writer = new FileWriter(file.getName());
-            file_writer.write(JSON.toJSONString(result_kvl));
+            file_writer.write(JSON.toJSONString(result_kvm));
             file_writer.close();
 
             System.out.println("Reducer.doReduce(): reduceTask " + reduceTask + " end.");
