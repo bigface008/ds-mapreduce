@@ -25,10 +25,10 @@ public class Scheduler {
      * suitable for passing to {@link Call}. registerChan will yield all
      * existing registered workers (if any) and new ones as they register.
      *
-     * @param jobName job name
-     * @param mapFiles files' name (if in same dir, it's also the files' path)
-     * @param nReduce the number of reduce task that will be run ("R" in the paper)
-     * @param phase MAP or REDUCE
+     * @param jobName      job name
+     * @param mapFiles     files' name (if in same dir, it's also the files' path)
+     * @param nReduce      the number of reduce task that will be run ("R" in the paper)
+     * @param phase        MAP or REDUCE
      * @param registerChan register info channel
      */
     public static void schedule(String jobName, String[] mapFiles, int nReduce, JobPhase phase, Channel<String> registerChan) {
@@ -48,13 +48,33 @@ public class Scheduler {
         System.out.println(String.format("Schedule: %d %s tasks (%d I/Os)", nTasks, phase, nOther));
 
         /**
-        // All ntasks tasks have to be scheduled on workers. Once all tasks
-        // have completed successfully, schedule() should return.
-        //
-        // Your code here (Part III, Part IV).
-        //
-        */
+         // All ntasks tasks have to be scheduled on workers. Once all tasks
+         // have completed successfully, schedule() should return.
+         //
+         // Your code here (Part III, Part IV).
+         //
+         */
 
+        // String address = registerChan.poll();
+        // Thread 2 start.
+        // Thread 2 end.
+
+        for (int i = 0; i < nTasks; i++) {
+            // Thread 1 start.
+            String file_name = "";
+            if (i < mapFiles.length) {
+                file_name = mapFiles[i];
+            }
+
+            DoTaskArgs arg = new DoTaskArgs(jobName, file_name, phase, i, nOther);
+            boolean task_finished = false;
+            while (!task_finished) {
+                String worker_address = registerChan.poll();
+                Call.getWorkerRpcService(worker_address).doTask(arg);
+
+            }
+            // Thread 1 end.
+        }
 
         System.out.println(String.format("Schedule: %s done", phase));
     }
