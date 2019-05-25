@@ -5,6 +5,7 @@ import org.apache.commons.io.FileUtils;
 import sjtu.sdic.mapreduce.common.KeyValue;
 import sjtu.sdic.mapreduce.common.Utils;
 
+import javax.rmi.CORBA.Util;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -66,11 +67,11 @@ public class Mapper {
      */
     public static void doMap(String jobName, int mapTask, String inFile, int nReduce, MapFunc mapF) {
         try {
-            System.out.println("Mapper.doMap(): jobName " + jobName + "; mapTask "
-                    + mapTask + "; inFile " + inFile + "; nReduce " + nReduce);
+//            System.out.println("Mapper.doMap(): jobName " + jobName + "; mapTask "
+//                    + mapTask + "; inFile " + inFile + "; nReduce " + nReduce);
             File file = new File(inFile);
             if (!file.exists()) {
-                System.out.println("Mapper.doMap(): Operation of opening file failed.");
+                System.out.println("Mapper.doMap(): Operation of opening file '" + inFile + "' failed.");
                 return;
             }
 
@@ -89,7 +90,7 @@ public class Mapper {
             for (int i = 0; i < nReduce; i++) {
                 File intermediate_file = new File(Utils.reduceName(jobName, mapTask, i));
                 if (!intermediate_file.createNewFile()) {
-                    System.out.println("Mapper.doMap(): Operation of creating file failed.");
+                    System.out.println("Mapper.doMap(): Operation of creating file '" + Utils.reduceName(jobName, mapTask, i) + "' failed.");
                     return;
                 }
 
@@ -98,7 +99,7 @@ public class Mapper {
                 file_writer.close();
             }
 
-            System.out.println("Mapper.doMap(): mapTask " + mapTask + " end.");
+//            System.out.println("Mapper.doMap(): mapTask " + mapTask + " end.");
         } catch (IOException e) {
             e.printStackTrace();
         }

@@ -6,9 +6,7 @@ import sjtu.sdic.mapreduce.common.JobPhase;
 import sjtu.sdic.mapreduce.common.Utils;
 import sjtu.sdic.mapreduce.rpc.Call;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.CountDownLatch;
 
 /**
@@ -55,25 +53,35 @@ public class Scheduler {
          //
          */
 
-        // String address = registerChan.poll();
-        // Thread 2 start.
-        // Thread 2 end.
+        final int n_other = nOther;
+        final JobPhase phase_final = phase;
+        CountDownLatch latch = new CountDownLatch(nTasks);
 
         for (int i = 0; i < nTasks; i++) {
-            // Thread 1 start.
-            String file_name = "";
-            if (i < mapFiles.length) {
-                file_name = mapFiles[i];
-            }
+            final int task_id = i;
+            new Thread(() -> {
+                while (true) {
+                    try {
+                        String address = registerChan.read();
+                        DoTaskArgs arg = new DoTaskArgs(jobName, mapFiles[task_id], phase_final, task_id, n_other);
+                        Call.getWorkerRpcService(address).doTask(arg);
+                        registerChan.write(address);
+                        latch.countDown();
+                        break;
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        Utils.debug("No worker available.");
+                    }
+                }
+            }).start();
+        }
 
-            DoTaskArgs arg = new DoTaskArgs(jobName, file_name, phase, i, nOther);
-            boolean task_finished = false;
-            while (!task_finished) {
-                String worker_address = registerChan.poll();
-                Call.getWorkerRpcService(worker_address).doTask(arg);
-
-            }
-            // Thread 1 end.
+        try {
+            latch.await();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
         }
 
         System.out.println(String.format("Schedule: %s done", phase));

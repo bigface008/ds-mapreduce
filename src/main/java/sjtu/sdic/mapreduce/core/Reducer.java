@@ -52,32 +52,32 @@ public class Reducer {
      */
     public static void doReduce(String jobName, int reduceTask, String outFile, int nMap, ReduceFunc reduceF) {
         try {
-            System.out.println("Reducer.doReduce(): jobName " + jobName + "; reduceTask "
-                    + reduceTask + "; outFile " + outFile + "; nMap " + nMap);
+//            System.out.println("Reducer.doReduce(): jobName " + jobName + "; reduceTask "
+//                    + reduceTask + "; outFile " + outFile + "; nMap " + nMap);
             ArrayList<KeyValue> kvl_slice = new ArrayList<KeyValue>();
             for (int i = 0; i < nMap; i++) {
-                System.out.println("Reducer.doReduce(): reading file " + i);
+//                System.out.println("Reducer.doReduce(): reading file " + i);
                 File file = new File(Utils.reduceName(jobName, i, reduceTask));
                 if (!file.exists()) {
-                    System.out.println("Reducer.doReduce(): Operation of opening file failed.");
+                    System.out.println("Reducer.doReduce(): Operation of opening file '" + Utils.reduceName(jobName, i, reduceTask) + "' failed.");
                     return;
                 }
 
                 String content = FileUtils.readFileToString(file);
                 List<KeyValue> kvl_per_file = JSON.parseArray(content, KeyValue.class);
                 kvl_slice.addAll(kvl_per_file);
-                System.out.println("Reducer.doReduce(): reading file " + i + " complete");
+//                System.out.println("Reducer.doReduce(): reading file " + i + " complete");
             }
 
-            System.out.println("Reducer.doReduce(): Sort kvl.");
+//            System.out.println("Reducer.doReduce(): Sort kvl.");
             kvl_slice.sort(new Comparator<KeyValue>() {
                 @Override
                 public int compare(KeyValue o1, KeyValue o2) {
                     return o1.key.compareTo(o2.key);
                 }
             });
-            System.out.println("Reducer.doReduce(): kvl_slice len " + kvl_slice.size());
-            System.out.println("Reducer.doReduce(): Sort kvl end.\nReducer.doReduce(): Build result_kvl.");
+//            System.out.println("Reducer.doReduce(): kvl_slice len " + kvl_slice.size());
+//            System.out.println("Reducer.doReduce(): Sort kvl end.\nReducer.doReduce(): Build result_kvl.");
 
             int len = kvl_slice.size();
             ArrayList<KeyValue> result_kvl = new ArrayList<KeyValue>();
@@ -94,11 +94,11 @@ public class Reducer {
                 String temp = reduceF.reduce(kvl_slice.get(len - 1).key, vl_for_key.toArray(new String[0]));
                 result_kvl.add(new KeyValue((kvl_slice.get(len - 1).key), temp));
             }
-            System.out.println("Reducer.doReduce(): build result_kvl end.");
+//            System.out.println("Reducer.doReduce(): build result_kvl end.");
 
             File file = new File(outFile);
             if (!file.createNewFile()) {
-                System.out.println("Reducer.doReduce(): Operation of creating file failed.");
+                System.out.println("Reducer.doReduce(): Operation of creating file '" + outFile + "' failed.");
                 return;
             }
 
@@ -109,7 +109,7 @@ public class Reducer {
             file_writer.write(JSON.toJSONString(result_kvm));
             file_writer.close();
 
-            System.out.println("Reducer.doReduce(): reduceTask " + reduceTask + " end.");
+//            System.out.println("Reducer.doReduce(): reduceTask " + reduceTask + " end.");
         } catch (Exception e) {
             e.printStackTrace();
         }
